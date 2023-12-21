@@ -26,11 +26,13 @@ const Map = () => {
         minZoom={7}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution="418 Teapot MEDAŞ Askerleri"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {/* <Counties /> */}
         <Cities />
+        <KonyaElektrikIstasyonlari />
+        {/* <KonyaStations /> */}
       </MapContainer>
     </div>
   );
@@ -73,6 +75,44 @@ const getRandomColor = () => {
 //     drawCountyBoundary(city);
 //   });
 // };
+
+const KonyaStations = () => {
+  const map = useMap();
+  function pinStations() {
+    fetch("../../constants/benzin-istasyonlari.geojson")
+      .then(function (response) {
+        return response.json();
+      })
+      .then((json) => {
+        const array = json.features;
+        for (let index = 0; index < array.length; index++) {
+          const element = array[index];
+          L.marker(element.geometry.coordinates).addTo(map);
+        }
+      });
+  }
+
+  pinStations();
+};
+
+const KonyaElektrikIstasyonlari = () => {
+  const map = useMap();
+  function pinStations() {
+    fetch("../../constants/elektrikli-sarj.json")
+      .then(function (response) {
+        return response.json();
+      })
+      .then((json) => {
+        const array = json.data.filter((item) => item.storeCity === "Konya");
+        for (let index = 0; index < array.length; index++) {
+          const element = array[index];
+          L.marker([element.latitude, element.longitude]).addTo(map);
+        }
+      });
+  }
+
+  pinStations();
+};
 
 const Cities = () => {
   const map = useMap();
