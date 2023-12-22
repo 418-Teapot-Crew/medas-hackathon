@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useMap } from 'react-leaflet/hooks';
 import L, { latLng, latLngBounds } from 'leaflet';
 import { useState } from 'react';
+import * as turf from '@turf/turf';
 
 const Map = () => {
   const [test, setTest] = useState(false);
@@ -49,24 +50,6 @@ const Cities = () => {
   drawCityBoundary(map);
 };
 
-function isStationInsideCounty(point, polygon) {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][1],
-      yi = polygon[i][0];
-    const xj = polygon[j][1],
-      yj = polygon[j][0];
-
-    const intersect =
-      yi > point.longitude !== yj > point.longitude &&
-      point.latitude < ((xj - xi) * (point.longitude - yi)) / (yj - yi) + xi;
-
-    console.log(intersect);
-
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
 function drawCityBoundary(map) {
   fetch('../../constants/cities.geojson')
     .then(function (response) {
@@ -186,7 +169,7 @@ const pinMarkers = (map, countyBoundries) => {
         const array = json.data.filter((item) => item.storeCity === 'Konya');
         for (let index = 0; index < array.length; index++) {
           const element = array[index];
-          isStationInsideCounty(element, countyBoundries[0]) &&
+          isPointInGeoJSON(element, countyBoundries) &&
             L.marker([element.latitude, element.longitude]).addTo(map);
         }
       });
@@ -194,5 +177,12 @@ const pinMarkers = (map, countyBoundries) => {
 
   pinStations();
 };
+
+function isPointInGeoJSON(point, geoJSONCoordinates) {
+  const turfPoint = turf.point([point.longitude, point.latitude]);
+  const turfPolygon = turf.polygon(geoJSONCoordinates);
+  const isInside = turf.booleanPointInPolygon(turfPoint, turfPolygon);
+  return isInside;
+}
 
 export default Map;
