@@ -1,11 +1,13 @@
-import React from "react";
-import { MapContainer } from "react-leaflet/MapContainer";
-import { TileLayer } from "react-leaflet/TileLayer";
-import "leaflet/dist/leaflet.css";
-import { useMap } from "react-leaflet/hooks";
-import L, { latLng, latLngBounds } from "leaflet";
+import React, { useState } from 'react';
+import { MapContainer } from 'react-leaflet/MapContainer';
+import { TileLayer } from 'react-leaflet/TileLayer';
+import 'leaflet/dist/leaflet.css';
+import { useMap } from 'react-leaflet/hooks';
+import L, { latLng, latLngBounds } from 'leaflet';
 
 const Map = () => {
+  const [selectedCity, setSelectedCity] = useState(null);
+
   const mapBoundaries = {
     southWest: latLng(34.025514, 25.584519),
     northEast: latLng(42.211024, 44.823563),
@@ -29,9 +31,10 @@ const Map = () => {
           attribution="418 Teapot MEDAŞ Askerleri"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {/* <Counties /> */}
-        <Cities />
-        <KonyaElektrikIstasyonlari />
+        {selectedCity ? <Counties /> : null}
+
+        <Cities setSelectedCity={setSelectedCity} />
+        {/* <KonyaElektrikIstasyonlari /> */}
         {/* <KonyaStations /> */}
       </MapContainer>
     </div>
@@ -39,8 +42,8 @@ const Map = () => {
 };
 
 const getRandomColor = () => {
-  var letters = "0123456789ABCDEF";
-  var color = "#";
+  var letters = '0123456789ABCDEF';
+  var color = '#';
   for (var i = 0; i < 6; i++) {
     color += letters[Math.floor(Math.random() * 16)];
   }
@@ -79,7 +82,7 @@ const getRandomColor = () => {
 const KonyaStations = () => {
   const map = useMap();
   function pinStations() {
-    fetch("../../constants/benzin-istasyonlari.geojson")
+    fetch('../../constants/benzin-istasyonlari.geojson')
       .then(function (response) {
         return response.json();
       })
@@ -98,12 +101,12 @@ const KonyaStations = () => {
 const KonyaElektrikIstasyonlari = () => {
   const map = useMap();
   function pinStations() {
-    fetch("../../constants/elektrikli-sarj.json")
+    fetch('../../constants/elektrikli-sarj.json')
       .then(function (response) {
         return response.json();
       })
       .then((json) => {
-        const array = json.data.filter((item) => item.storeCity === "Konya");
+        const array = json.data.filter((item) => item.storeCity === 'Konya');
         for (let index = 0; index < array.length; index++) {
           const element = array[index];
           L.marker([element.latitude, element.longitude]).addTo(map);
@@ -114,10 +117,10 @@ const KonyaElektrikIstasyonlari = () => {
   pinStations();
 };
 
-const Cities = () => {
+const Cities = ({ setSelectedCity }) => {
   const map = useMap();
   function drawCityBoundary() {
-    fetch("../../constants/cities.geojson")
+    fetch('../../constants/cities.geojson')
       .then(function (response) {
         return response.json();
       })
@@ -125,26 +128,30 @@ const Cities = () => {
         const array = json.features;
         for (let index = 0; index < array.length; index++) {
           const element = array[index];
+
           L.geoJSON(element.geometry, {
+            title: element?.properties?.name,
             style: {
-              color: "lightgray",
+              color: 'black',
+              fillColor: 'lighygray',
               weight: 2,
             },
           })
-            .on("click", (e) => {
+            .on('click', (e) => {
               map.fitBounds(e.target.getBounds(), {
                 animate: true,
               });
+              setSelectedCity(e?.target?.options?.title);
               // drawCountyBoundary(map); // TODO: draw county boundaries
             })
-            .on("mouseover", (e) => {
+            .on('mouseover', (e) => {
               e.target.setStyle({
-                color: "red",
+                fillColor: 'red',
               });
             })
-            .on("mouseout", (e) => {
+            .on('mouseout', (e) => {
               e.target.setStyle({
-                color: "lightgray",
+                fillColor: 'lightgray',
               });
             })
             .addTo(map);
@@ -155,7 +162,7 @@ const Cities = () => {
 };
 
 function drawCountyBoundary(map) {
-  fetch("../../constants/konya_ilceler.geojson")
+  fetch('../../constants/konya_ilceler.geojson')
     .then(function (response) {
       return response.json();
     })
@@ -165,23 +172,23 @@ function drawCountyBoundary(map) {
         const element = array[index];
         L.geoJSON(element.geometry, {
           style: {
-            color: "lightgray",
+            color: 'lightgray',
             weight: 2,
           },
         })
-          .on("click", (e) => {
+          .on('click', (e) => {
             map.fitBounds(e.target.getBounds(), {
               animate: true,
             });
           })
-          .on("mouseover", (e) => {
+          .on('mouseover', (e) => {
             e.target.setStyle({
-              color: "red",
+              color: 'red',
             });
           })
-          .on("mouseout", (e) => {
+          .on('mouseout', (e) => {
             e.target.setStyle({
-              color: "lightgray",
+              color: 'lightgray',
             });
           })
           .addTo(map);
@@ -192,7 +199,7 @@ function drawCountyBoundary(map) {
 const Counties = () => {
   const map = useMap();
   function drawCountyBoundary() {
-    fetch("../../constants/konya_ilceler.geojson")
+    fetch('../../constants/konya_ilceler.geojson')
       .then(function (response) {
         return response.json();
       })
@@ -202,23 +209,24 @@ const Counties = () => {
           const element = array[index];
           L.geoJSON(element.geometry, {
             style: {
-              color: "lightgray",
+              color: 'black',
+              fillColor: 'lightgray',
               weight: 2,
             },
           })
-            .on("click", (e) => {
+            .on('click', (e) => {
               map.fitBounds(e.target.getBounds(), {
                 animate: true,
               });
             })
-            .on("mouseover", (e) => {
+            .on('mouseover', (e) => {
               e.target.setStyle({
-                color: "red",
+                fillColor: 'blue',
               });
             })
-            .on("mouseout", (e) => {
+            .on('mouseout', (e) => {
               e.target.setStyle({
-                color: "lightgray",
+                fillColor: 'lightgray',
               });
             })
             .addTo(map);
