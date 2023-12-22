@@ -49,21 +49,24 @@ const Cities = () => {
   drawCityBoundary(map);
 };
 
-const resetMap = () => {
-  const map = useMap();
-  map.eachLayer((layer) => {
-    if (layer instanceof L.GeoJSON) {
-      map.removeLayer(layer);
-    }
-  });
-  map.eachLayer((layer) => {
-    if (layer instanceof L.Marker) {
-      map.removeLayer(layer);
-    }
-  });
-  drawCityBoundary(map);
-};
+function isStationInsideCounty(point, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][1],
+      yi = polygon[i][0];
+    const xj = polygon[j][1],
+      yj = polygon[j][0];
 
+    const intersect =
+      yi > point.longitude !== yj > point.longitude &&
+      point.latitude < ((xj - xi) * (point.longitude - yi)) / (yj - yi) + xi;
+
+    console.log(intersect);
+
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
 function drawCityBoundary(map) {
   fetch('../../constants/cities.geojson')
     .then(function (response) {
@@ -156,7 +159,7 @@ function drawCountyBoundary(map, cityName) {
                 map.removeLayer(layer);
               }
             });
-            pinMarkers(map, 'Karatay');
+            pinMarkers(map, element.geometry.coordinates);
           })
           .on('mouseover', (e) => {
             e.target.setStyle({
@@ -173,7 +176,7 @@ function drawCountyBoundary(map, cityName) {
     });
 }
 
-const pinMarkers = (map, countyName) => {
+const pinMarkers = (map, countyBoundries) => {
   function pinStations() {
     fetch('../../constants/elektrikli-sarj.json')
       .then(function (response) {
@@ -183,7 +186,8 @@ const pinMarkers = (map, countyName) => {
         const array = json.data.filter((item) => item.storeCity === 'Konya');
         for (let index = 0; index < array.length; index++) {
           const element = array[index];
-          L.marker([element.latitude, element.longitude]).addTo(map);
+          isStationInsideCounty(element, countyBoundries[0]) &&
+            L.marker([element.latitude, element.longitude]).addTo(map);
         }
       });
   }
