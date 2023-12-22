@@ -14,7 +14,7 @@ const Map = () => {
 
   const bounds = latLngBounds(mapBoundaries.southWest, mapBoundaries.northEast);
   return (
-    <div className="w-full h-[100vh] flex flex-col justify-center items-center gap-5">
+    <div className="w-full h-[100vh] flex flex-col justify-center items-center gap-5 relative">
       <MapContainer
         center={[39.1560158, 35.0479979]}
         zoom={7}
@@ -33,7 +33,7 @@ const Map = () => {
         />
       </MapContainer>
       <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-10 left-5 z-20"
+        className="bg-black text-white tracking-widest border border-black py-2 px-6 rounded absolute text-base cursor-pointer right-5 top-5 z-20 font-extralight"
         onClick={() => {
           setTest(!test);
         }}
@@ -70,6 +70,26 @@ function drawCityBoundary(map) {
       return response.json();
     })
     .then(function (json) {
+      map.fitBounds(
+        [
+          [34.025514, 25.584519],
+          [42.211024, 44.823563],
+        ],
+        {
+          animate: false,
+        }
+      );
+      map.eachLayer((layer) => {
+        if (layer instanceof L.GeoJSON) {
+          map.removeLayer(layer);
+        }
+      });
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          map.removeLayer(layer);
+        }
+      });
+
       const array = json.features;
       const featureGroup = [];
       for (let index = 0; index < array.length; index++) {
