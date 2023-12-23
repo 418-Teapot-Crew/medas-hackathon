@@ -116,6 +116,19 @@ function drawCityBoundary(map) {
     });
 }
 
+function getColorByCounty(county) {
+  switch (county) {
+    case 'MERAM':
+    case 'EREĞLİ':
+      return 'yellow';
+    case 'SELÇUKLU':
+    case 'KARATAY':
+      return 'green';
+    default:
+      return 'red';
+  }
+}
+
 function drawCountyBoundary(map, cityName) {
   fetch(`../../constants/${cityName}_ilceler.geojson`)
     .then(function (response) {
@@ -128,7 +141,7 @@ function drawCountyBoundary(map, cityName) {
         L.geoJSON(element.geometry, {
           style: {
             color: 'black',
-            fillColor: 'blue',
+            fillColor: getColorByCounty(element.properties.ILCEADI),
             weight: 1,
           },
         })
@@ -144,16 +157,16 @@ function drawCountyBoundary(map, cityName) {
             });
             pinMarkers(map, element.geometry.coordinates);
           })
-          .on('mouseover', (e) => {
-            e.target.setStyle({
-              fillColor: 'red',
-            });
-          })
-          .on('mouseout', (e) => {
-            e.target.setStyle({
-              fillColor: 'blue',
-            });
-          })
+          // .on('mouseover', (e) => {
+          //   e.target.setStyle({
+          //     fillColor: 'red',
+          //   });
+          // })
+          // .on('mouseout', (e) => {
+          //   e.target.setStyle({
+          //     fillColor: 'blue',
+          //   });
+          // })
           .addTo(map);
       }
     });
@@ -169,8 +182,11 @@ const pinMarkers = (map, countyBoundries) => {
         const array = json.data.filter((item) => item.storeCity === 'Konya');
         for (let index = 0; index < array.length; index++) {
           const element = array[index];
+          console.log(element);
           isPointInGeoJSON(element, countyBoundries) &&
-            L.marker([element.latitude, element.longitude]).addTo(map);
+            L.marker([element.latitude, element.longitude], {
+              icon: getIconByColor(element.color ?? 'blue'),
+            }).addTo(map);
         }
       });
   }
@@ -186,3 +202,15 @@ function isPointInGeoJSON(point, geoJSONCoordinates) {
 }
 
 export default Map;
+
+const getIconByColor = (color) => {
+  // color = green, red, blue
+  return new L.Icon({
+    iconUrl: `../../constants/img/marker-icon-2x-${color}.png`,
+    shadowUrl: '../../constants/img/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+};
