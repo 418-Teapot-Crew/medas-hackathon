@@ -51,7 +51,7 @@ const Cities = () => {
 };
 
 function drawCityBoundary(map) {
-  fetch('../../constants/cities.geojson')
+  fetch('/assets/cities.geojson')
     .then(function (response) {
       return response.json();
     })
@@ -130,7 +130,7 @@ function getColorByCounty(county) {
 }
 
 function drawCountyBoundary(map, cityName) {
-  fetch(`../../constants/${cityName}_ilceler.geojson`)
+  fetch(`/assets/${cityName}_ilceler.geojson`)
     .then(function (response) {
       return response.json();
     })
@@ -174,7 +174,7 @@ function drawCountyBoundary(map, cityName) {
 
 const pinMarkers = (map, countyBoundries) => {
   function pinStations() {
-    fetch('../../constants/elektrikli-sarj.json')
+    fetch('/assets/elektrikli-sarj.json')
       .then(function (response) {
         return response.json();
       })
@@ -206,8 +206,8 @@ export default Map;
 const getIconByColor = (color) => {
   // color = green, red, blue
   return new L.Icon({
-    iconUrl: `../../constants/img/marker-icon-2x-${color}.png`,
-    shadowUrl: '../../constants/img/marker-shadow.png',
+    iconUrl: `/assets/img/marker-icon-2x-${color}.png`,
+    shadowUrl: '/assets/img/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
